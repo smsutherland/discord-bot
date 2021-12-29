@@ -51,7 +51,7 @@ impl Client {
             verified: response["verified"].as_bool().unwrap(),
         })
     }
-    
+
     /// Get a reference to the client's id.
     pub fn id(&self) -> u64 {
         self.id
