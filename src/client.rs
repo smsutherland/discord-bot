@@ -37,7 +37,10 @@ impl Client {
             id: response["id"].as_str().unwrap().parse().unwrap(),
             username: String::from(response["username"].as_str().unwrap()),
             avatar: String::from(response["avatar"].as_str().unwrap()),
-            discriminator: response["discriminator"].as_str().map(String::from).unwrap(),
+            discriminator: response["discriminator"]
+                .as_str()
+                .map(String::from)
+                .unwrap(),
             public_flags: response["public_flags"].as_u64().unwrap(),
             flags: response["flags"].as_u64().unwrap(),
             bot: response["bot"].as_bool().unwrap(),
