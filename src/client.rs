@@ -51,4 +51,79 @@ impl Client {
             verified: response["verified"].as_bool().unwrap(),
         })
     }
+    
+    /// Get a reference to the client's id.
+    pub fn id(&self) -> u64 {
+        self.id
+    }
+
+    /// Get a reference to the client's username.
+    pub fn username(&self) -> &str {
+        self.username.as_ref()
+    }
+
+    /// Get a reference to the client's avatar.
+    pub fn avatar(&self) -> &str {
+        self.avatar.as_ref()
+    }
+
+    /// Get a reference to the client's discriminator.
+    pub fn discriminator(&self) -> u16 {
+        self.discriminator
+    }
+
+    /// Get a reference to the client's public flags.
+    pub fn public_flags(&self) -> u64 {
+        self.public_flags
+    }
+
+    /// Get a reference to the client's flags.
+    pub fn flags(&self) -> u64 {
+        self.flags
+    }
+
+    /// Get a reference to the client's bot.
+    pub fn bot(&self) -> bool {
+        self.bot
+    }
+
+    /// Get a reference to the client's banner.
+    pub fn banner(&self) -> Option<&String> {
+        self.banner.as_ref()
+    }
+
+    /// Get a reference to the client's banner color.
+    pub fn banner_color(&self) -> Option<&String> {
+        self.banner_color.as_ref()
+    }
+
+    /// Get a reference to the client's accent color.
+    pub fn accent_color(&self) -> Option<&String> {
+        self.accent_color.as_ref()
+    }
+
+    /// Get a reference to the client's bio.
+    pub fn bio(&self) -> &str {
+        self.bio.as_ref()
+    }
+
+    /// Get a reference to the client's locale.
+    pub fn locale(&self) -> &str {
+        self.locale.as_ref()
+    }
+
+    /// Get a reference to the client's mfa enabled.
+    pub fn mfa_enabled(&self) -> bool {
+        self.mfa_enabled
+    }
+
+    /// Get a reference to the client's email.
+    pub fn email(&self) -> Option<&String> {
+        self.email.as_ref()
+    }
+
+    /// Get a reference to the client's verified.
+    pub fn verified(&self) -> bool {
+        self.verified
+    }
 }
