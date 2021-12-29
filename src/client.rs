@@ -31,8 +31,6 @@ impl Client {
         )
         .unwrap();
 
-        println!("{}", response);
-
         Ok(Client {
             id: response["id"].as_str().unwrap().parse().unwrap(),
             username: String::from(response["username"].as_str().unwrap()),
