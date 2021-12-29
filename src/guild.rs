@@ -1,3 +1,5 @@
+use crate::user::User;
+
 struct Role; // TODO: Create Role struct
 struct Emoji; // TODO: Create Emoji struct
 struct PartialVoiceState; // TODO: Create PartialVoiceState struct
@@ -6,7 +8,6 @@ struct PartialPresenceUpdate; // TODO: Create PartialPresenceUpdate struct
 struct StageInstance; // TODO: Create StageInstance struct
 struct Sticker; // TODO: Create Sticker struct
 struct GuildScheduledEvent; // TODO: Create GuildScheduledEvent struct
-struct User; // TODO: Create User struct
 
 type Snowflake = u64; // TODO: Create Snowflake struct
 type ISO8601Timestamp = u64; // TODO: Research ISO8601 Timestamp
