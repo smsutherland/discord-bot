@@ -1,6 +1,8 @@
+#[derive(Debug)]
 struct PartialServerIntegration; // TODO: Create PartialServerIntegration struct
 
 type Snowflake = u64; // TODO: Create Snowflake struct
+#[derive(Debug)]
 pub struct User {
     id: Snowflake,
     username: String,
@@ -56,6 +58,7 @@ impl User {
     }
 }
 
+#[derive(Debug)]
 struct Connection {
     id: String,
     name: String,
@@ -68,6 +71,7 @@ struct Connection {
     visibility: VisibilityType,
 }
 
+#[derive(Debug)]
 enum PremiumType {
     None,
     NitroClassic,
@@ -85,6 +89,7 @@ impl PremiumType {
     }
 }
 
+#[derive(Debug)]
 enum VisibilityType {
     None,
     Everyone,

@@ -1,16 +1,26 @@
 use crate::user::User;
+use json::JsonValue;
 
+#[derive(Debug)]
 struct Role; // TODO: Create Role struct
+#[derive(Debug)]
 struct Emoji; // TODO: Create Emoji struct
+#[derive(Debug)]
 struct PartialVoiceState; // TODO: Create PartialVoiceState struct
+#[derive(Debug)]
 struct Channel; // TODO: Create Channel struct
+#[derive(Debug)]
 struct PartialPresenceUpdate; // TODO: Create PartialPresenceUpdate struct
+#[derive(Debug)]
 struct StageInstance; // TODO: Create StageInstance struct
+#[derive(Debug)]
 struct Sticker; // TODO: Create Sticker struct
+#[derive(Debug)]
 struct GuildScheduledEvent; // TODO: Create GuildScheduledEvent struct
 
 type Snowflake = u64; // TODO: Create Snowflake struct
 type ISO8601Timestamp = u64; // TODO: Research ISO8601 Timestamp
+#[derive(Debug)]
 pub struct Guild {
     id: Snowflake,
     name: String,
@@ -66,6 +76,30 @@ pub struct Guild {
     premium_progress_bar_enabled: bool,
 }
 
+#[derive(Debug)]
+pub struct PartialGuild {
+    id: u64,
+    name: String,
+    icon: Option<String>,
+    owner: bool,
+    permissions: u64,
+    features: Vec<GuildFeature>,
+}
+
+impl PartialGuild {
+    pub fn from_json_value(json: JsonValue) -> PartialGuild {
+        PartialGuild {
+            id: json["id"].as_str().unwrap().parse().unwrap(),
+            name: json["name"].as_str().map(String::from).unwrap(),
+            icon: json["icon"].as_str().map(String::from),
+            owner: json["owner"].as_bool().unwrap(),
+            permissions: json["permissions"].as_str().unwrap().parse().unwrap(),
+            features: json["features"].members().map(|feature| GuildFeature::from_str(feature.as_str().unwrap())).collect(),
+        }
+    }
+}
+
+#[derive(Debug)]
 struct GuildPreview {
     id: Snowflake,
     name: String,
@@ -79,11 +113,13 @@ struct GuildPreview {
     description: Option<String>,
 }
 
+#[derive(Debug)]
 struct GuildWidget {
     enabled: bool,
     channel_id: Option<Snowflake>,
 }
 
+#[derive(Debug)]
 struct GuildMember {
     user: Option<User>,
     nick: Option<String>,
@@ -98,6 +134,7 @@ struct GuildMember {
     communication_disabled_until: Option<ISO8601Timestamp>,
 }
 
+#[derive(Debug)]
 struct Integration {
     id: Snowflake,
     name: String,
@@ -116,11 +153,13 @@ struct Integration {
     application: Option<IntegrationApplication>,
 }
 
+#[derive(Debug)]
 struct IntegrationAccount {
     id: String,
     name: String,
 }
 
+#[derive(Debug)]
 struct IntegrationApplication {
     id: Snowflake,
     name: String,
@@ -130,16 +169,19 @@ struct IntegrationApplication {
     bot: Option<User>,
 }
 
+#[derive(Debug)]
 struct Ban {
     reason: Option<String>,
     user: User,
 }
 
+#[derive(Debug)]
 struct WelcomeScreen {
     description: Option<String>,
     welcome_channels: Vec<WelcomeScreenChannel>,
 }
 
+#[derive(Debug)]
 struct WelcomeScreenChannel {
     channel_id: Snowflake,
     description: String,
@@ -147,22 +189,26 @@ struct WelcomeScreenChannel {
     emoji_name: Option<String>,
 }
 
+#[derive(Debug)]
 enum DefaultMessageNotificationLevel {
     AllMessages,
     OnlyMentions,
 }
 
+#[derive(Debug)]
 enum ExplicitContentFilterLevel {
     Disabled,
     MembersWithoutRoles,
     AllMembers,
 }
 
+#[derive(Debug)]
 enum MFALevel {
     None,
     Elevated,
 }
 
+#[derive(Debug)]
 enum VerificationLevel {
     None,
     Low,
@@ -171,6 +217,7 @@ enum VerificationLevel {
     VeryHigh,
 }
 
+#[derive(Debug)]
 enum GuildNSFWLevel {
     Default,
     Explicit,
@@ -178,6 +225,7 @@ enum GuildNSFWLevel {
     AgeRestricted,
 }
 
+#[derive(Debug)]
 enum PremiumTier {
     None,
     Tier1,
@@ -185,6 +233,7 @@ enum PremiumTier {
     Tier3,
 }
 
+#[derive(Debug)]
 enum GuildFeature {
     AnimatedIcon,
     Banner,
@@ -210,6 +259,38 @@ enum GuildFeature {
     WelcomeScreenEnabled,
 }
 
+impl GuildFeature{
+    fn from_str(str: &str) -> GuildFeature{
+        use GuildFeature::*;
+        match str{
+            "ANIMATED_ICON" => AnimatedIcon,
+            "BANNER" => Banner,
+            "COMMERCE" => Commerce,
+            "COMMUNITY" => Community,
+            "DISCOVERABLE" => Discoverable,
+            "FEATURABLE" => Featurable,
+            "INVITE_SPLASH" => InviteSplash,
+            "MEMBER_VERIFICATION_GATE_ENABLED" => MemberVerificationGateEnabled,
+            "MONETIZATION_ENABLED" => MonetizationEnabled,
+            "MORE_STICKERS" => MoreStickers,
+            "NEWS" => News,
+            "PARTNERED" => Partnered,
+            "PREVIEW_ENABLED" => PreviewEnabled,
+            "PRIVATE_THREADS" => PrivateThreads,
+            "ROLE_ICONS" => RoleIcons,
+            "SEVEN_DAY_THREAD_ARCHIVE" => SevenDayThreadArchive,
+            "THREE_DAY_THREAD_ARCHIVE" => ThreeDayThreadArchive,
+            "TICKETED_EVENTS_ENABLED" => TicketedEventsEnabled,
+            "VANITY_URL" => VanityURL,
+            "VERIFIED" => Verified,
+            "VIP_REGIONS" => VIPRegions,
+            "WELCOME_SCREEN_ENABLED" => WelcomeScreenEnabled,
+            _ => unreachable!(),
+        }
+    }
+}
+
+#[derive(Debug)]
 enum IntegrationExpireBehavior {
     RemoveRole,
     Kick,
