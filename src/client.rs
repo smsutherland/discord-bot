@@ -20,6 +20,12 @@ pub struct Client {
 }
 
 impl Client {
+    /// Create a new client object from a bot token.
+    /// ## Errors
+    /// This function will return an error if ureq is unable to make a request to the Discord API
+    /// 
+    /// ## Panics
+    /// This function will panic if the response from Discord is not parsable into a Client struct.
     pub fn new(token: &str) -> Result<Client, ureq::Error> {
         let request_url = "https://discord.com/api/v9/users/@me";
 
