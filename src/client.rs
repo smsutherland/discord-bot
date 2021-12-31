@@ -1,4 +1,4 @@
-use crate::{user::User, guild::PartialGuild};
+use crate::{user::User, guild::PartialGuild, request::{Request, Route, HTTPMethod}};
 
 type Snowflake = u64; // TODO: Create Snowflake struct
 
@@ -59,18 +59,17 @@ impl<'a> FetchGuilds<'a> {
             assert!(limit < 200);
         }
 
-        let request_url = "https://discord.com/api/v9/users/@me/guilds";
+        let mut request = Request::new(Route::new(HTTPMethod::Get, "/users/@me/guilds"))
+            .authorize(self.token);
 
-        let mut request = ureq::get(request_url);
-        request = request.set("Authorization", &format!("Bot {}", self.token));
         if let Some(before) = self.before{
-            request = request.query("limit", &before.to_string());
+            request.add_param("limit", &before.to_string());
         }
         if let Some(after) = self.after{
-            request = request.query("limit", &after.to_string());
+            request.add_param("limit", &after.to_string());
         }
         if let Some(limit) = self.limit{
-            request = request.query("limit", &limit.to_string());
+            request.add_param("limit", &limit.to_string());
         }
 
         let response = json::parse(&request.call().unwrap().into_string().unwrap()).unwrap();
