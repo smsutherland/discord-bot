@@ -17,7 +17,7 @@ impl Request {
     }
 
     pub fn authorize(mut self, token: &str) -> Self {
-        self.with_param("Authorization", &format!("Bot {}", token))
+        self.with_header("Authorization", &format!("Bot {}", token))
     }
 
     pub fn with_param(mut self, key: &str, val: &str) -> Self {
