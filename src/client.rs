@@ -31,7 +31,7 @@ pub struct FetchGuilds<'a> {
 impl<'a> FetchGuilds<'a> {
     fn default(token: &'a str) -> Self {
         FetchGuilds {
-            token: token,
+            token,
             before: None,
             after: None,
             limit: None,
@@ -53,7 +53,7 @@ impl<'a> FetchGuilds<'a> {
         self
     }
 
-    pub fn call(self) -> Vec<PartialGuild>{
+    pub fn call(self) -> Vec<PartialGuild> {
         if let Some(limit) = self.limit {
             assert!(limit > 0);
             assert!(limit < 200);
@@ -75,6 +75,10 @@ impl<'a> FetchGuilds<'a> {
 
         let response = json::parse(&request.call().unwrap().into_string().unwrap()).unwrap();
 
-        response.members().cloned().map(|guild| PartialGuild::from_json_value(guild)).collect()
+        response
+            .members()
+            .cloned()
+            .map(PartialGuild::from_json_value)
+            .collect()
     }
 }

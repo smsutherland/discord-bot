@@ -94,7 +94,10 @@ impl PartialGuild {
             icon: json["icon"].as_str().map(String::from),
             owner: json["owner"].as_bool().unwrap(),
             permissions: json["permissions"].as_str().unwrap().parse().unwrap(),
-            features: json["features"].members().map(|feature| GuildFeature::from_str(feature.as_str().unwrap())).collect(),
+            features: json["features"]
+                .members()
+                .map(|feature| GuildFeature::from_str(feature.as_str().unwrap()))
+                .collect(),
         }
     }
 }
@@ -259,10 +262,10 @@ enum GuildFeature {
     WelcomeScreenEnabled,
 }
 
-impl GuildFeature{
-    fn from_str(str: &str) -> GuildFeature{
+impl GuildFeature {
+    fn from_str(str: &str) -> GuildFeature {
         use GuildFeature::*;
-        match str{
+        match str {
             "ANIMATED_ICON" => AnimatedIcon,
             "BANNER" => Banner,
             "COMMERCE" => Commerce,
