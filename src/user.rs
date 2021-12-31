@@ -1,3 +1,5 @@
+use crate::request::{Request, Route, HTTPMethod};
+
 #[derive(Debug)]
 struct PartialServerIntegration; // TODO: Create PartialServerIntegration struct
 
@@ -23,11 +25,11 @@ pub struct User {
 
 impl User {
     pub fn from_bot_token(token: &str) -> User {
-        let request_url = "https://discord.com/api/v9/users/@me";
+        let request = Request::new(Route::new(HTTPMethod::Get, "/users/@me"))
+            .authorize(token);
 
         let response = json::parse(
-            &ureq::get(request_url)
-                .set("Authorization", &format!("Bot {}", token))
+            &request
                 .call()
                 .unwrap()
                 .into_string()
