@@ -1,4 +1,6 @@
-use crate::{user::User, guild::PartialGuild, request::{Request, Route, HTTPMethod}};
+use crate::user::User;
+use crate::guild::PartialGuild;
+use crate::request::{Request, Route, HTTPMethod};
 
 type Snowflake = u64; // TODO: Create Snowflake struct
 
