@@ -60,6 +60,9 @@ impl Request {
         for (key, val) in self.params {
             request = request.query(&key, &val);
         }
+        for (key, val) in self.header{
+            request = request.set(&key, &val);
+        }
         request.call()
     }
 }
