@@ -8,28 +8,28 @@ pub struct Request {
 }
 
 impl Request {
-    pub fn get(endpoint: &str) -> Self{
+    pub fn get(endpoint: &str) -> Self {
         Self::new(HTTPMethod::Get, endpoint)
     }
 
-    pub fn head(endpoint: &str) -> Self{
+    pub fn head(endpoint: &str) -> Self {
         Self::new(HTTPMethod::Head, endpoint)
     }
 
-    pub fn post(endpoint: &str) -> Self{
+    pub fn post(endpoint: &str) -> Self {
         Self::new(HTTPMethod::Post, endpoint)
     }
 
-    pub fn put(endpoint: &str) -> Self{
+    pub fn put(endpoint: &str) -> Self {
         Self::new(HTTPMethod::Put, endpoint)
     }
 
-    pub fn delete(endpoint: &str) -> Self{
+    pub fn delete(endpoint: &str) -> Self {
         Self::new(HTTPMethod::Delete, endpoint)
     }
 
-    fn new(method: HTTPMethod, endpoint: &str) -> Self{
-        Self{
+    fn new(method: HTTPMethod, endpoint: &str) -> Self {
+        Self {
             route: Route::new(method, endpoint),
             params: Vec::new(),
             header: Vec::new(),
@@ -80,7 +80,7 @@ impl Request {
         for (key, val) in self.params {
             request = request.query(&key, &val);
         }
-        for (key, val) in self.header{
+        for (key, val) in self.header {
             request = request.set(&key, &val);
         }
         request.call()

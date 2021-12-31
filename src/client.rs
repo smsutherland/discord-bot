@@ -1,6 +1,6 @@
-use crate::user::User;
 use crate::guild::PartialGuild;
 use crate::request::Request;
+use crate::user::User;
 
 type Snowflake = u64; // TODO: Create Snowflake struct
 
@@ -61,16 +61,15 @@ impl<'a> FetchGuilds<'a> {
             assert!(limit < 200);
         }
 
-        let mut request = Request::get("/users/@me/guilds")
-            .authorize(self.token);
+        let mut request = Request::get("/users/@me/guilds").authorize(self.token);
 
-        if let Some(before) = self.before{
+        if let Some(before) = self.before {
             request.add_param("limit", &before.to_string());
         }
-        if let Some(after) = self.after{
+        if let Some(after) = self.after {
             request.add_param("limit", &after.to_string());
         }
-        if let Some(limit) = self.limit{
+        if let Some(limit) = self.limit {
             request.add_param("limit", &limit.to_string());
         }
 

@@ -25,17 +25,9 @@ pub struct User {
 
 impl User {
     pub fn from_bot_token(token: &str) -> User {
-        let request = Request::get("/users/@me")
-            .authorize(token);
+        let request = Request::get("/users/@me").authorize(token);
 
-        let response = json::parse(
-            &request
-                .call()
-                .unwrap()
-                .into_string()
-                .unwrap(),
-        )
-        .unwrap();
+        let response = json::parse(&request.call().unwrap().into_string().unwrap()).unwrap();
 
         User {
             id: response["id"].as_str().unwrap().parse().unwrap(),
