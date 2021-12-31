@@ -8,9 +8,29 @@ pub struct Request {
 }
 
 impl Request {
-    pub fn new(route: Route) -> Self {
-        Self {
-            route,
+    pub fn get(endpoint: &str) -> Self{
+        Self::new(HTTPMethod::Get, endpoint)
+    }
+
+    pub fn head(endpoint: &str) -> Self{
+        Self::new(HTTPMethod::Head, endpoint)
+    }
+
+    pub fn post(endpoint: &str) -> Self{
+        Self::new(HTTPMethod::Post, endpoint)
+    }
+
+    pub fn put(endpoint: &str) -> Self{
+        Self::new(HTTPMethod::Put, endpoint)
+    }
+
+    pub fn delete(endpoint: &str) -> Self{
+        Self::new(HTTPMethod::Delete, endpoint)
+    }
+
+    fn new(method: HTTPMethod, endpoint: &str) -> Self{
+        Self{
+            route: Route::new(method, endpoint),
             params: Vec::new(),
             header: Vec::new(),
         }
@@ -68,12 +88,12 @@ impl Request {
 }
 
 #[derive(Debug)]
-pub struct Route {
+struct Route {
     method: HTTPMethod,
     endpoint: String,
 }
 impl Route {
-    pub fn new(method: HTTPMethod, endpoint: &str) -> Self {
+    fn new(method: HTTPMethod, endpoint: &str) -> Self {
         Self {
             method,
             endpoint: String::from(endpoint),
@@ -82,7 +102,7 @@ impl Route {
 }
 
 #[derive(Debug)]
-pub enum HTTPMethod {
+enum HTTPMethod {
     Get,
     Head,
     Post,

@@ -1,6 +1,6 @@
 use crate::user::User;
 use crate::guild::PartialGuild;
-use crate::request::{Request, Route, HTTPMethod};
+use crate::request::Request;
 
 type Snowflake = u64; // TODO: Create Snowflake struct
 
@@ -61,7 +61,7 @@ impl<'a> FetchGuilds<'a> {
             assert!(limit < 200);
         }
 
-        let mut request = Request::new(Route::new(HTTPMethod::Get, "/users/@me/guilds"))
+        let mut request = Request::get("/users/@me/guilds")
             .authorize(self.token);
 
         if let Some(before) = self.before{
