@@ -7,3 +7,10 @@ fn create_bot() {
     let guilds = bot.fetch_guilds().call();
     println!("{:?}", guilds);
 }
+
+#[test]
+fn connect_bot() {
+    let bot_token = dotenv::var("BOT_TOKEN").unwrap();
+    let bot = client::Client::new(&bot_token);
+    bot.run();
+}

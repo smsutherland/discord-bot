@@ -18,6 +18,10 @@ impl Client {
         }
     }
 
+    pub fn run(&self){
+        todo!();
+    }
+
     pub fn fetch_guilds(&self) -> FetchGuilds {
         FetchGuilds::default(&self.token)
     }
