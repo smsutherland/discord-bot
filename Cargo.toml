@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 ureq = "2.4.0"
 json = "0.12.4"
+websocket = "0.26.2"
 
 [dev-dependencies]
 dotenv = "0.15.0"
