@@ -1,26 +1,26 @@
 use crate::user::User;
-use json::JsonValue;
+use serde::{de::Error, Deserialize, Deserializer};
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct Role; // TODO: Create Role struct
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct Emoji; // TODO: Create Emoji struct
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct PartialVoiceState; // TODO: Create PartialVoiceState struct
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct Channel; // TODO: Create Channel struct
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct PartialPresenceUpdate; // TODO: Create PartialPresenceUpdate struct
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct StageInstance; // TODO: Create StageInstance struct
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct Sticker; // TODO: Create Sticker struct
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct GuildScheduledEvent; // TODO: Create GuildScheduledEvent struct
 
 type Snowflake = u64; // TODO: Create Snowflake struct
 type ISO8601Timestamp = u64; // TODO: Research ISO8601 Timestamp
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct Guild {
     id: Snowflake,
     name: String,
@@ -76,33 +76,27 @@ pub struct Guild {
     premium_progress_bar_enabled: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct PartialGuild {
+    #[serde(deserialize_with = "string_to_int")]
     id: u64,
     name: String,
     icon: Option<String>,
     owner: bool,
+    #[serde(deserialize_with = "string_to_int")]
     permissions: u64,
     features: Vec<GuildFeature>,
 }
 
-impl PartialGuild {
-    pub fn from_json_value(json: JsonValue) -> PartialGuild {
-        PartialGuild {
-            id: json["id"].as_str().unwrap().parse().unwrap(),
-            name: json["name"].as_str().map(String::from).unwrap(),
-            icon: json["icon"].as_str().map(String::from),
-            owner: json["owner"].as_bool().unwrap(),
-            permissions: json["permissions"].as_str().unwrap().parse().unwrap(),
-            features: json["features"]
-                .members()
-                .map(|feature| GuildFeature::from_str(feature.as_str().unwrap()))
-                .collect(),
-        }
-    }
+fn string_to_int<'de, D>(deserializer: D) -> Result<Snowflake, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: &str = Deserialize::deserialize(deserializer)?;
+    s.parse::<u64>().map_err(D::Error::custom)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct GuildPreview {
     id: Snowflake,
     name: String,
@@ -116,13 +110,13 @@ struct GuildPreview {
     description: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct GuildWidget {
     enabled: bool,
     channel_id: Option<Snowflake>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct GuildMember {
     user: Option<User>,
     nick: Option<String>,
@@ -137,7 +131,7 @@ struct GuildMember {
     communication_disabled_until: Option<ISO8601Timestamp>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct Integration {
     id: Snowflake,
     name: String,
@@ -156,13 +150,13 @@ struct Integration {
     application: Option<IntegrationApplication>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct IntegrationAccount {
     id: String,
     name: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct IntegrationApplication {
     id: Snowflake,
     name: String,
@@ -172,19 +166,19 @@ struct IntegrationApplication {
     bot: Option<User>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct Ban {
     reason: Option<String>,
     user: User,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct WelcomeScreen {
     description: Option<String>,
     welcome_channels: Vec<WelcomeScreenChannel>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct WelcomeScreenChannel {
     channel_id: Snowflake,
     description: String,
@@ -192,26 +186,26 @@ struct WelcomeScreenChannel {
     emoji_name: Option<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 enum DefaultMessageNotificationLevel {
     AllMessages,
     OnlyMentions,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 enum ExplicitContentFilterLevel {
     Disabled,
     MembersWithoutRoles,
     AllMembers,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 enum MFALevel {
     None,
     Elevated,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 enum VerificationLevel {
     None,
     Low,
@@ -220,7 +214,7 @@ enum VerificationLevel {
     VeryHigh,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 enum GuildNSFWLevel {
     Default,
     Explicit,
@@ -228,7 +222,7 @@ enum GuildNSFWLevel {
     AgeRestricted,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 enum PremiumTier {
     None,
     Tier1,
@@ -236,7 +230,7 @@ enum PremiumTier {
     Tier3,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 enum GuildFeature {
     AnimatedIcon,
     Banner,
@@ -293,7 +287,7 @@ impl GuildFeature {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 enum IntegrationExpireBehavior {
     RemoveRole,
     Kick,

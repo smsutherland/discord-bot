@@ -11,9 +11,9 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(token: &str) -> Client {
+    pub async fn new(token: &str) -> Client {
         Client {
-            user: User::from_bot_token(token),
+            user: User::from_bot_token(token).await,
             token: String::from(token),
         }
     }
@@ -76,7 +76,7 @@ impl<'a> FetchGuilds<'a> {
     /// The function will panic if something funky happens when parsing the return from the Discord API.
     ///
     /// TODO: proper error handling of these things.
-    pub fn call(self) -> Vec<PartialGuild> {
+    pub async fn call(self) -> Vec<PartialGuild> {
         if let Some(limit) = self.limit {
             assert!(limit > 0);
             assert!(limit < 200);
@@ -85,21 +85,16 @@ impl<'a> FetchGuilds<'a> {
         let mut request = Request::get("/users/@me/guilds").authorize(self.token);
 
         if let Some(before) = self.before {
-            request.add_param("limit", &before.to_string());
+            request.add_param("before", &before.to_string());
         }
         if let Some(after) = self.after {
-            request.add_param("limit", &after.to_string());
+            request.add_param("after", &after.to_string());
         }
         if let Some(limit) = self.limit {
             request.add_param("limit", &limit.to_string());
         }
 
-        let response = json::parse(&request.call().unwrap().into_string().unwrap()).unwrap();
-
-        response
-            .members()
-            .cloned()
-            .map(PartialGuild::from_json_value)
-            .collect()
+        let response = request.call().await.unwrap();
+        response.json::<Vec<PartialGuild>>().await.unwrap()
     }
 }

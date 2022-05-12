@@ -1,11 +1,13 @@
 use crate::request::Request;
+use serde::{de::Error, Deserialize, Deserializer};
 
 #[derive(Debug)]
 struct PartialServerIntegration; // TODO: Create PartialServerIntegration struct
 
 type Snowflake = u64; // TODO: Create Snowflake struct
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct User {
+    #[serde(deserialize_with = "string_to_int")]
     id: Snowflake,
     username: String,
     discriminator: String,
@@ -23,32 +25,19 @@ pub struct User {
     public_flags: Option<u64>,
 }
 
+fn string_to_int<'de, D>(deserializer: D) -> Result<Snowflake, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: &str = Deserialize::deserialize(deserializer)?;
+    s.parse::<u64>().map_err(D::Error::custom)
+}
+
 impl User {
-    pub fn from_bot_token(token: &str) -> User {
+    pub async fn from_bot_token(token: &str) -> User {
         let request = Request::get("/users/@me").authorize(token);
 
-        let response = json::parse(&request.call().unwrap().into_string().unwrap()).unwrap();
-
-        User {
-            id: response["id"].as_str().unwrap().parse().unwrap(),
-            username: String::from(response["username"].as_str().unwrap()),
-            discriminator: response["discriminator"]
-                .as_str()
-                .map(String::from)
-                .unwrap(),
-            avatar: response["avatar"].as_str().map(String::from),
-            bot: response["bot"].as_bool(),
-            system: response["system"].as_bool(),
-            mfa_enabled: Some(response["mfa_enabled"].as_bool().unwrap()),
-            banner: response["banner"].as_str().map(String::from),
-            accent_color: response["accent_color"].as_u64(),
-            locale: Some(String::from(response["locale"].as_str().unwrap())),
-            verified: Some(response["verified"].as_bool().unwrap()),
-            email: response["email"].as_str().map(String::from),
-            flags: Some(response["flags"].as_u64().unwrap()),
-            premium_type: response["premium_type"].as_u8().map(PremiumType::from),
-            public_flags: Some(response["public_flags"].as_u64().unwrap()),
-        }
+        request.call().await.unwrap().json::<User>().await.unwrap()
     }
 }
 
@@ -65,7 +54,7 @@ struct Connection {
     visibility: VisibilityType,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 enum PremiumType {
     None,
     NitroClassic,

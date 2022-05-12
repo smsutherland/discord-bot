@@ -1,10 +1,13 @@
+use reqwest::{header::HeaderMap, Client, Error, Response};
+use tokio::net::TcpStream;
+
 const BASE_URL: &str = "https://discord.com/api/v9";
 
 #[derive(Debug)]
 pub struct Request {
     route: Route,
     params: Vec<(String, String)>,
-    header: Vec<(String, String)>,
+    header: HeaderMap,
 }
 
 impl Request {
@@ -32,7 +35,7 @@ impl Request {
         Self {
             route: Route::new(method, endpoint),
             params: Vec::new(),
-            header: Vec::new(),
+            header: HeaderMap::new(),
         }
     }
 
@@ -57,33 +60,30 @@ impl Request {
         );
     }
 
-    pub fn with_header(mut self, key: &str, val: &str) -> Self {
+    pub fn with_header(mut self, key: &'static str, val: &str) -> Self {
         self.add_header(key, val);
         self
     }
 
-    pub fn add_header(&mut self, key: &str, val: &str) {
-        self.header.push((String::from(key), String::from(val)));
+    pub fn add_header(&mut self, key: &'static str, val: &str) {
+        self.header.insert(key, val.try_into().unwrap());
     }
 
-    pub fn add_headers(&mut self, new_headers: Vec<(&str, &str)>) {
-        self.header.extend(
-            new_headers
-                .into_iter()
-                .map(|(s1, s2)| (String::from(s1), String::from(s2))),
-        );
+    pub fn add_headers(&mut self, new_headers: Vec<(&'static str, &str)>) {
+        for (key, val) in new_headers {
+            self.header.insert(key, val.try_into().unwrap());
+        }
     }
 
-    pub fn call(self) -> Result<ureq::Response, ureq::Error> {
+    pub async fn call(self) -> Result<Response, Error> {
         let url = format!("{}{}", BASE_URL, self.route.endpoint);
-        let mut request = self.route.method.call(&url);
-        for (key, val) in self.params {
-            request = request.query(&key, &val);
-        }
-        for (key, val) in self.header {
-            request = request.set(&key, &val);
-        }
-        request.call()
+        let client = reqwest::Client::new();
+        let request = self.route.method.call(client, &url);
+        request
+            .query(&self.params)
+            .headers(self.header)
+            .send()
+            .await
     }
 }
 
@@ -111,14 +111,14 @@ enum HTTPMethod {
 }
 
 impl HTTPMethod {
-    fn call(&self, path: &str) -> ureq::Request {
+    fn call(&self, client: Client, path: &str) -> reqwest::RequestBuilder {
         use HTTPMethod::*;
         match *self {
-            Get => ureq::get(path),
-            Head => ureq::head(path),
-            Post => ureq::post(path),
-            Put => ureq::put(path),
-            Delete => ureq::delete(path),
+            Get => client.get(path),
+            Head => client.head(path),
+            Post => client.post(path),
+            Put => client.put(path),
+            Delete => client.delete(path),
         }
     }
 }
