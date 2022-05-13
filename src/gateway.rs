@@ -1,5 +1,5 @@
 use crate::request::Request;
-use futures_util::StreamExt;
+use futures_util::{StreamExt, FutureExt};
 use serde::Deserialize;
 use serde_json::{json, Value as JsonValue};
 use std::thread;
@@ -57,15 +57,20 @@ impl DiscordGateway {
         let res = tokio_tungstenite::connect_async(client).await;
         let (mut ws, _) = res.unwrap();
 
-        let mut result = Self {
-            ws,
-            token: String::from(token),
-            heartbeat_thread: None,
-        };
+        // let mut result = Self {
+        //     ws,
+        //     token: String::from(token),
+        //     heartbeat_thread: None,
+        // };
 
-        result.hello().await;
+        let heartbeat_interval = Duration::from_millis(30);
 
-        result
+        Self::run(ws, heartbeat_interval).await;
+
+        // result.hello().await;
+
+        // result
+        loop {}
     }
 
     async fn hello(&mut self) {
@@ -108,6 +113,25 @@ impl DiscordGateway {
         // let message = OwnedMessage::Text(payload.to_string());
 
         // self.ws.send_message(&message);
+    }
+
+    fn run(ws: WebSocketStream<MaybeTlsStream<TcpStream>>, heartbeat_interval: Duration) -> tokio::task::JoinHandle<()> {
+        let (mut tx, mut rx) = ws.split();
+        tokio::spawn(async move {
+            let mut heartbeat_time = tokio::time::Instant::now() + heartbeat_interval.mul_f32(fastrand::f32());
+            println!("running");
+            loop {
+                tokio::select!(
+                    msg = rx.next() => {
+                        println!("Message received: {:?}", msg);
+                    }
+                    _ = tokio::time::sleep_until(heartbeat_time) => {
+                        heartbeat_time = tokio::time::Instant::now() + heartbeat_interval;
+                        println!("tick!");
+                    }
+                );
+            }
+        })
     }
 }
 
