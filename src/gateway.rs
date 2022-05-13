@@ -6,7 +6,6 @@ use std::thread;
 use std::time::Duration;
 use tokio::net::TcpStream;
 use tokio_tungstenite::{
-    connect_async,
     tungstenite::{client::IntoClientRequest, http::header::HeaderValue, Message::Text},
     MaybeTlsStream, WebSocketStream,
 };
@@ -19,7 +18,7 @@ struct ConnectResponse {
 struct DiscordGateway {
     ws: WebSocketStream<MaybeTlsStream<TcpStream>>,
     token: String,
-    heartbeat_thread: Option<thread::JoinHandle<()>>,
+    heartbeat_thread: Option<tokio::task::JoinHandle<()>>,
 }
 
 impl DiscordGateway {
@@ -77,12 +76,12 @@ impl DiscordGateway {
             let heartbeat_interval = response.d.unwrap().as_object().unwrap()["heartbeat_interval"]
                 .as_u64()
                 .unwrap();
-            self.heartbeat_thread = Some(thread::spawn(move || {
+            self.heartbeat_thread = Some(tokio::spawn(async move {
                 let initial_delay = (heartbeat_interval as f32 * fastrand::f32()) as u64;
                 thread::sleep(Duration::from_millis(initial_delay));
                 let heartbeat_delay = Duration::from_millis(heartbeat_interval);
                 loop {
-                    thread::sleep(heartbeat_delay);
+                    tokio::time::sleep(heartbeat_delay).await;
                 }
             }));
         }
