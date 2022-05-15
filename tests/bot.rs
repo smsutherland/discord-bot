@@ -8,9 +8,9 @@ async fn create_bot() {
     println!("{:?}", guilds);
 }
 
-#[test]
-fn connect_bot() {
-    let bot_token = dotenv::var("BOT_TOKEN").unwrap();
-    let bot = client::Client::new(&bot_token);
-    bot.run();
-}
+// #[test]
+// fn connect_bot() {
+//     let bot_token = dotenv::var("BOT_TOKEN").unwrap();
+//     let bot = client::Client::new(&bot_token);
+//     bot.run();
+// }
