@@ -88,13 +88,13 @@ impl DiscordWebsocket {
     }
 
     fn close(&mut self, code: Option<(CloseCode, &str)>) {
-        print!("Closing socket... ");
+        info_mod!("Closing socket... ");
         let code = code.map(|(code, reason)| CloseFrame {
             code,
             reason: reason.into(),
         });
         self.ws.close(code);
-        println!("Socket closed");
+        info_mod!("Socket closed");
     }
 
     async fn receive_hello(&mut self) -> Duration {
@@ -130,14 +130,14 @@ impl DiscordWebsocket {
     async fn keep_alive(mut self, heartbeat_interval: Duration) {
         let heartbeat_start_time = Instant::now() + heartbeat_interval.mul_f32(fastrand::f32()*0.8);
         let mut heartbeat_interval = interval_at(heartbeat_start_time, heartbeat_interval);
-        println!("running");
+        info_mod!("running");
         let mut waiting_for_heartbeat_ack = false;
         loop {
             tokio::select!(
                 response = self.ws.next() => {
                     if let Some(Ok(msg)) = response {
                         let response: GatewayPayload = serde_json::from_str(&msg.into_text().unwrap()).unwrap();
-                        println!("Message received: {:#?}", response);
+                        debug_mod!("Message received: {:#?}", response);
                         match response.op {
                             DISPATCH => {},
                             HEARTBEAT => {},
@@ -151,16 +151,16 @@ impl DiscordWebsocket {
                             INVALIDATE_SESSION => {},
                             HELLO => {},
                             HEARTBEAT_ACK => {
-                                println!("Heartbeat ack received.");
+                                info_mod!("Heartbeat ack received.");
                                 waiting_for_heartbeat_ack = false;
                             },
                             GUILD_SYNC => {},
                             i => {
-                                println!("Unknown opcode: {i}. Ignoring...");
+                                warning_mod!("Unknown opcode: {i}. Ignoring...");
                             }
                         }
                     } else {
-                        println!("Error message received: {response:?}");
+                        error_mod!("Error message received: {response:?}");
                     }
                 }
                 _ = heartbeat_interval.tick() => {
@@ -175,11 +175,11 @@ impl DiscordWebsocket {
                 signal = self.shutdown_rx.recv() => {
                     match signal {
                         Ok(ShutdownSignal) => {
-                            println!("Shutdown signal received");
+                            info_mod!("Shutdown signal received");
                             break;
                         },
                         Err(err) => {
-                            println!("Shutting down due to error in shutdown signal: {}", err);
+                            warning_mod!("Shutting down due to error in shutdown signal: {}", err);
                             break;
                         },
                     }
@@ -197,7 +197,7 @@ impl DiscordWebsocket {
         });
         let message = Message::Text(payload.to_string());
         self.ws.send(message).await;
-        println!("heartbeat sent");
+        info_mod!("heartbeat sent");
     }
 }
 
@@ -212,24 +212,6 @@ async fn test_gateway() {
     let a = open_websocket(bot_token, shutdown_tx.subscribe());
     tokio::signal::ctrl_c().await;
     shutdown_tx.send(ShutdownSignal);
-    println!("shutdown signal sent");
+    info!("shutdown signal sent");
     a.await;
-}
-
-#[cfg(test)]
-mod test {
-    #[macro_export]
-    macro_rules! this_module {
-        () => {{
-            println!("hello from module test");
-            module_path!()
-        }};
-    }
-
-    #[test]
-    fn test_macro() {
-        use crate::this_module;
-
-        println!("{}", this_module!());
-    }
 }
