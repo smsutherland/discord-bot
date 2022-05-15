@@ -1,5 +1,24 @@
 use std::{sync::atomic::{AtomicU8, Ordering}, fmt::Display};
 
+#[macro_export]
+macro_rules! log {
+    ($level:ident, $($arg:tt)*) => {
+        $crate::log::log($crate::log::LogLevel::$level, &format!("{}", format!($($arg)*)))
+    }
+}
+#[macro_export]
+macro_rules! log_file {
+    ($level:ident, $($arg:tt)*) => {
+        $crate::log::log($crate::log::LogLevel::$level, &format!("[{}:{}]: {}", file!(), line!(), format!($($arg)*)))
+    }
+}
+#[macro_export]
+macro_rules! log_mod {
+    ($level:ident, $($arg:tt)*) => {
+        $crate::log::log($crate::log::LogLevel::$level, &format!("[{}]: {}", module_path!(), format!($($arg)*)))
+    }
+}
+
 macro_rules! make_log {
     ($name:ident, $name_file:ident, $name_mod:ident, $level:ident) => {
         make_log!($name, $name_file, $name_mod, $level, $);
@@ -9,19 +28,19 @@ macro_rules! make_log {
         #[macro_export]
         macro_rules! $name {
             ($dol($arg:tt)*) => {
-                $crate::log::log($crate::log::LogLevel::$level, &format!("{}", format!($dol($arg)*)))
+                $crate::log!($level, $dol($arg)*)
             }
         }
         #[macro_export]
         macro_rules! $name_file {
             ($dol($arg:tt)*) => {
-                $crate::log::log($crate::log::LogLevel::$level, &format!("[{}:{}]: {}", file!(), line!(), format!($dol($arg)*)))
+                $crate::log_file!($level, $dol($arg)*)
             }
         }
         #[macro_export]
         macro_rules! $name_mod {
             ($dol($arg:tt)*) => {
-                $crate::log::log($crate::log::LogLevel::$level, &format!("[{}]: {}", module_path!(), format!($dol($arg)*)))
+                $crate::log_mod!($level, $dol($arg)*)
             }
         }
     };
@@ -61,25 +80,6 @@ make_log!(notice, notice_file, notice_mod, Notice);
 make_log!(info, info_file, info_mod, Info);
 make_log!(debug, debug_file, debug_mod, Debug);
 
-#[macro_export]
-macro_rules! log {
-    ($level:ident, $($arg:tt)*) => {
-        $crate::log::log($crate::log::LogLevel::$level, &format!("{}", format!($($arg)*)))
-    }
-}
-#[macro_export]
-macro_rules! log_file {
-    ($($arg:tt)*) => {
-        $crate::log::log($crate::log::LogLevel::$level, &format!("[{}:{}]: {}", file!(), line!(), format!($($arg)*)))
-    }
-}
-#[macro_export]
-macro_rules! log_mod {
-    ($($arg:tt)*) => {
-        $crate::log::log($crate::log::LogLevel::$level, &format!("[{}]: {}", module_path!(), format!($($arg)*)))
-    }
-}
-
 pub fn set_log_level(new_log_level: LogLevel) {
     LOG_LEVEL.store(new_log_level as u8, Ordering::Relaxed);
 }
@@ -112,5 +112,6 @@ mod log_testing {
 
         log!(Err, "{}", 12);
         log!(Warning, "{}", 12);
+        info!("hello!");
     }
 }
