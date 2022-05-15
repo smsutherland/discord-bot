@@ -48,6 +48,7 @@ struct GatewayPayload {
 struct DiscordWebsocket {
     ws: WebSocketStream<MaybeTlsStream<TcpStream>>,
     shutdown_rx: Receiver<ShutdownSignal>,
+    token: String,
 }
 
 fn open_websocket(
@@ -57,6 +58,7 @@ fn open_websocket(
     tokio::spawn(async move {
         let mut ws = DiscordWebsocket::new(&token, shutdown_rx).await;
         let heartbeat_interval = ws.receive_hello().await;
+        ws.send_identify().await;
         ws.keep_alive(heartbeat_interval).await;
     })
 }
@@ -82,7 +84,7 @@ impl DiscordWebsocket {
 
         let res = tokio_tungstenite::connect_async(client).await;
         let (ws, _) = res.unwrap();
-        DiscordWebsocket { ws, shutdown_rx }
+        DiscordWebsocket { ws, shutdown_rx, token: token.to_string() }
     }
 
     fn close(&mut self, code: Option<(CloseCode, &str)>) {
@@ -109,8 +111,24 @@ impl DiscordWebsocket {
         }
     }
 
+    async fn send_identify(&mut self) {
+        let payload = json!({
+            "op": IDENTIFY,
+            "d": {
+                "token": self.token,
+                "intents": 0,
+                "properties": {
+                    "$browser": "discord-rs",
+                    "$device": "discord-rs",
+                }
+            },
+        }).to_string();
+
+        self.ws.send(Message::Text(payload)).await;
+    }
+
     async fn keep_alive(mut self, heartbeat_interval: Duration) {
-        let heartbeat_start_time = Instant::now() + heartbeat_interval.mul_f32(fastrand::f32());
+        let heartbeat_start_time = Instant::now() + heartbeat_interval.mul_f32(fastrand::f32()*0.8);
         let mut heartbeat_interval = interval_at(heartbeat_start_time, heartbeat_interval);
         println!("running");
         let mut waiting_for_heartbeat_ack = false;
@@ -119,9 +137,30 @@ impl DiscordWebsocket {
                 response = self.ws.next() => {
                     if let Some(Ok(msg)) = response {
                         let response: GatewayPayload = serde_json::from_str(&msg.into_text().unwrap()).unwrap();
-                        println!("Message received: {:?}", response);
+                        println!("Message received: {:#?}", response);
+                        match response.op {
+                            DISPATCH => {},
+                            HEARTBEAT => {},
+                            IDENTIFY => {},
+                            PRESENCE => {},
+                            VOICE_STATE => {},
+                            VOICE_PING => {},
+                            RESUME => {},
+                            RECONNECT => {},
+                            REQUEST_MEMBERS => {},
+                            INVALIDATE_SESSION => {},
+                            HELLO => {},
+                            HEARTBEAT_ACK => {
+                                println!("Heartbeat ack received.");
+                                waiting_for_heartbeat_ack = false;
+                            },
+                            GUILD_SYNC => {},
+                            i => {
+                                println!("Unknown opcode: {i}. Ignoring...");
+                            }
+                        }
                     } else {
-                        println!("Error message received: {:?}", response);
+                        println!("Error message received: {response:?}");
                     }
                 }
                 _ = heartbeat_interval.tick() => {
